@@ -1,5 +1,5 @@
 #!/bin/bash
 
-gcc -o stdev.out stdev.c
+gcc -o stdev.out stdev.c -lm
 ./stdev.out data.dat
 
