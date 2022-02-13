@@ -49,5 +49,5 @@ int main(int argc, char **argv){
   }
  sdOne = sqrt(sdOne/numberLines);
  sdTwo = sqrt(sdTwo/numberLines);
- printf("%f, %f\n", sdOne, sdTwo);
+ printf("%f %f\n", sdOne, sdTwo);
 }
