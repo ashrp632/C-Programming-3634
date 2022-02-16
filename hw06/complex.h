@@ -7,8 +7,6 @@ typedef struct{
     // Replace this comment with your definition of a complex number
     // (this should be a very small amount of code)
     // -------------------------------------------------------------
-    float real;
-    float imag;
 } c_num;
 
 // ---------------------------------------------
