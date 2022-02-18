@@ -3,10 +3,8 @@
 #define COMPLEX_H
 
 typedef struct{
-    // -------------------------------------------------------------
-    // Replace this comment with your definition of a complex number
-    // (this should be a very small amount of code)
-    // -------------------------------------------------------------
+  float real;
+  float imagine;
 } c_num;
 
 // ---------------------------------------------
