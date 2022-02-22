@@ -59,19 +59,15 @@ vector_t vectorReader(const char *fileName){
 
 vector_t *vectorConstructor(int size){
   
-  vector_t *a;
+  vector_t *a =(vector_t*) malloc(size*sizeof(vector_t));
   a->size = size;
   a->ptr = (double*) calloc(size, sizeof(double));
   return a;
 }
 
 void vectorDestructor(vector_t a){
-  for(int i=0;i<a.size;++i){
-    free(a.ptr+i);
-  }
+  free(a.ptr);
   a.size = 0;
-  a.ptr = NULL;
-  free(&a);
 }
 
 double vectorGet(vector_t a, int n){
@@ -94,13 +90,11 @@ vector_t vectorAdd(vector_t a, vector_t b){
   vector_t c = *vectorConstructor(maxSize);
 
   int n;
-  for(n=0;n<=maxSize;++n){
+  for(n=0;n<maxSize;++n){
     double an = vectorGet(a, n);
     double bn = vectorGet(b, n);
     vectorSet(c, n, an+bn);
   }
-  free(a.ptr);
-  free(b.ptr);
   return c;
   
 }
@@ -117,8 +111,8 @@ void vectorPrint(vector_t a){
 // including duplicates in each
 int count_commont(vector_t a,vector_t b){
   int i,j,count;
-  for(i==0;i<a.size;++i){
-    for(j=0;i<=b.size;++i){
+  for(i=0;i<a.size;++i){
+    for(j=0;i<b.size;++i){
       if(vectorGet(a,i) == vectorGet(b,i)){
         ++count;
       }
