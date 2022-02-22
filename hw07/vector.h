@@ -7,7 +7,7 @@ typedef struct {
 } vector_t;
 
 vector_t vectorReader(const char *fileName);
-vector_t *vectorConstructor(int size);
+vector_t vectorConstructor(int size);
 void vectorDestructor(vector_t a);
 double vectorGet(vector_t a, int n);
 void vectorSet(vector_t a, int n, double val);

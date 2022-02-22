@@ -18,5 +18,6 @@ int main(int argc, char **argv){
 
   vectorDestructor(a);
   vectorDestructor(b);
+  vectorDestructor(c);
 }
 

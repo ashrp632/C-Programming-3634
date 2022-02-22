@@ -29,7 +29,7 @@ vector_t vectorReader(const char *fileName){
   // count number of lines in file
   int numberLines = countLines(fp);
 
-  vector_t *a = vectorConstructor(numberLines);
+  vector_t a = vectorConstructor(numberLines);
   
   // create a buffer on the stack
   char buf[BUFSIZ];
@@ -40,7 +40,7 @@ vector_t vectorReader(const char *fileName){
     fgets(buf, BUFSIZ, fp);
     float vn;
     int res = sscanf(buf, "%f", &vn);
-    vectorSet(*a, n, vn);
+    vectorSet(a, n, vn);
     if(res==-1){
       break;
     }
@@ -53,15 +53,15 @@ vector_t vectorReader(const char *fileName){
   fclose(fp);
 
 
-  return *a;
+  return a;
   
 }
 
-vector_t *vectorConstructor(int size){
+vector_t vectorConstructor(int size){
   
-  vector_t *a =(vector_t*) malloc(size*sizeof(vector_t));
-  a->size = size;
-  a->ptr = (double*) calloc(size, sizeof(double));
+  vector_t a;
+  a.size = size;
+  a.ptr = (double*) malloc(size* sizeof(double));
   return a;
 }
 
@@ -87,7 +87,7 @@ vector_t vectorAdd(vector_t a, vector_t b){
 
   int maxSize = max(a.size, b.size);
   
-  vector_t c = *vectorConstructor(maxSize);
+  vector_t c = vectorConstructor(maxSize);
 
   int n;
   for(n=0;n<maxSize;++n){
