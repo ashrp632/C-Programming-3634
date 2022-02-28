@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -n 4
-#SBATCH -t 00:01:00
+#SBATCH -n 1
+#SBATCH -t 00:00:30
 #SBATCH -p dev_q
 #SBATCH -A cmda3634_rjh
 
@@ -26,7 +26,7 @@ export OMP_NUM_THREADS=$SLURM_NTASKS
 echo "Monte Carlo pi estimate with $OMP_NUM_THREADS threads"
 
 # Run the program. Don't forget arguments!
-./pi.out 500
+./pi.out 6000
 
 # The script will exit whether we give the "exit" command or not.
 exit
