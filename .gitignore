@@ -1,4 +1,4 @@
 *.out
-slurm*.out
+!slurm*.out
 *~
 *#
