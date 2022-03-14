@@ -1,0 +1,22 @@
+
+The system default contains no modules
+  (env var: LMOD_SYSTEM_DEFAULT_MODULES is empty)
+  No changes in loaded modules
+
+Monte Carlo pi estimate with 4 threads
+N = 7777
+pi ~ 3.123055162659123
+elapsed ~ 0.000168361 s
+threads = 1
+N = 7777
+pi ~ 3.111225408255111
+elapsed ~ 0.00115737 s
+threads = 2
+N = 7777
+pi ~ 3.152886717243153
+elapsed ~ 0.00165294 s
+threads = 3
+N = 7777
+pi ~ 3.150315031503150
+elapsed ~ 0.00306176 s
+threads = 4
