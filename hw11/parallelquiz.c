@@ -27,15 +27,18 @@ int main(int argc, char **argv){
 
     // Globally set number of threads
     omp_set_num_threads(4);
+    
 
     // Loop A
     // Fill v with zeros
+#pragma omp parallel for
     for(n=0;n<N;++n){
         v[n] = 0;
     }
 
     // Loop B
     // Propagate value from v[0] to all entries of v
+#pragma omp parallel for
     v[0] = 7;
     for(n=1;n<N;++n){
         v[n] = v[0];
@@ -43,52 +46,57 @@ int main(int argc, char **argv){
 
     // Loop C
     // Set v[n] to the nth triangular number
+#pragma omp parallel for
     for(n=1;n<N;++n){
         if(n==0){
             v[n] = 0;
         }
         else{
-            v[n] = v[n-1]+n;
+	  v[n] = ((n*n+1))/2)
         }
     }
 
     // Loop D
     // Reverse the entries of v
-    for(n=0;n<N/2;++n){ 
-        i = N-1-n;
-        temp = v[n];
-        v[n] = v[i];
-        v[i] = temp;
+#pragma omp parallel for
+    for(n=0;n<N/2;++n){
+      int i = N-1-n;
+      int temp = v[n];
+      v[n] = v[i];
+      v[i] = temp;
     }
 
     // Loop E
     // Store v in reverse order in w
+#pragma omp parallel for
     for(n=0;n<N;++n){
-        i = N-1-n;
-        w[n] = v[i];
+      int i = N-1-n;
+      w[n] = v[i];
     }
 
     // Loop F
     // Use randInt() function to fill v with "random" values
-    for(n=0;n<N;++n){
-        v[n] = randInt();
-    }
+// for(n=0;n<N;++n){
+// v[n] = randInt();
+// }
 
     // Loop G
     // In z[n], store the nth logistic map iteration of a0 with parameter r
-    z[0] = a0;
-    for(n=1;n<N;++n){
-        z[n] = logisticMap(z[n-1],r);
-    }
+    // z[0] = a0;
+    // for(n=1;n<N;++n){
+    // z[n] = logisticMap(z[n-1],r);
+    // }
 
     // Loop H
     // In z[n], store an approximate fixed point of the logistic map with parameter 4*n/N
+ #pragma omp parallel for
     for(n=0;n<N;++n){
         z[n] = logisticLimit(a0,4.*n/N);
     }
 
     // Loop I
     // In v[n], store 1 if n is prime, 0 otherwise
+#pragma omp parallel for
     for(n=0;n<N;++n){
         if(n<2){
             v[n] = 0;
@@ -105,12 +113,13 @@ int main(int argc, char **argv){
 
     // Loop J
     // In v[n], store the sum of the first n odd numbers
+#pragma omp parallel for
     for(n=0;n<N;++n){
         if(n==0){
             v[n] = 0;
         }
         else{
-            v[n] = v[n-1]+2*n-1;
+            v[n] = n*n
         }
     }
 
