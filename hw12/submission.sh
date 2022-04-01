@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes 1
 #SBATCH --ntasks 128
-#SBATCH -t 00:05:00
+#SBATCH -t 00:10:00
 #SBATCH -p dev_q
 #SBATCH -A cmda3634_rjh
 #SBATCH -o slurm-timing.out
@@ -30,6 +30,14 @@ export OMP_DYNAMIC=false
 ############################################
 # PUT YOUR COMMANDS HERE TO RUN YOUR TESTS #
 ############################################
+./main.out 1 100000
+./main.out 2 100000
+./main.out 4 100000
+./main.out 8 100000
+./main.out 16 100000
+./main.out 32 100000
+./main.out 64 100000
+./main.out 128 100000
 
 # The script will exit whether we give the "exit" command or not.
 exit

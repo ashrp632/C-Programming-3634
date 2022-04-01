@@ -42,23 +42,39 @@ int main(int argc, char **argv){
     // PUT THREAD INITIALIZATION BLOCK HERE //
     //////////////////////////////////////////
 
+#pragma omp  
+{
+  int foo = omp_get_thread_num();
+}
     // Loop B
     // Propagate value from v[0] to all entries of v
     v[0] = 7;
+    double tic = omp_get_wtime();
+    for(n=0;n<100;++n){
 #pragma omp parallel for
     for(n=1;n<N;++n){
         v[n] = v[0];
     }
+}
+    double toc = omp_get_wtime();
+    printf("elapsed B = %g\n", (toc-tic)/100);
 
     // Loop H
     // In z[n], store an approximate periodic point of the logistic map with parameter 4*n/N
+    double tic1 = omp_get_wtime();
+    for(n=0;n<100;++n){
 #pragma omp parallel for
     for(n=0;n<N;++n){
         z[n] = logisticLimit(a0,4.*n/N);
     }
+ }
+    double toc1 = omp_get_wtime();
+    printf("elapsed H = %g\n", (toc1-tic1)/100);
 
     // Loop I
     // In v[n], store 1 if n is prime, 0 otherwise
+    double tic2 = omp_get_wtime();
+    for(n=0;n<100;++n){
 #pragma omp parallel for private(i)
     for(n=0;n<N;++n){
         if(n<2){
@@ -73,13 +89,20 @@ int main(int argc, char **argv){
             }
         }
     }
-
+ }
+    double toc2 = omp_get_wtime();
+    printf("elapsed I = %g\n", (toc2 - tic2)/100);
     // Loop J
     // In v[n], store the sum of the first n odd numbers
+    double tic3 = omp_get_wtime();
+    for(n=0;n<100;++n){
 #pragma omp parallel for
     for(n=0;n<N;++n){
         v[n] = n*n;
     }
+  }
+    double toc3 = omp_get_wtime();
+    printf("elapsed J = %g\n", (toc3 - tic3)/100);
 
     free(v);
     free(z);
