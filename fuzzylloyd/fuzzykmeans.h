@@ -2,27 +2,25 @@
 #ifndef fkm_h
 #define fkm_h
 
-typedef struct{
-    double x,y;
-} vec;
+// "v0" and "v1" are pointers, each representing an array with 2 elements.
+//
+// Returns the SQUARED Euclidean distance
+// between the points ( v0[0] , v0[1] ) and ( v1[0] , v1[1] ).
+double dist2(double* v0, double* v1);
 
-// This function returns the Euclidean distance between v0 and v1.
-double dist(vec v0, vec v1);
+// "d2" is an array of squared distances between a single data point and each cluster center.
+// "j" is the index of the cluster center whose weight should be calculated.
+// "k" is the number of cluster centers (and the length of "d2")
+//
+// Returns the weight of a data point with respect to cluster j.
+double weight(double* d2,int j,int k);
 
-// This function returns the weight between one vector "vi" and one center.
-// Weight is the dissimilarity function described in the assignment instructions.
-// Notice that calculating weight requires knowledge of every cluster center.
-// "vi" is a data point
-// "centers" is an array of cluster centesr
-// "j" is the center for which you want to return the weight
-// "k" is the number of centers
-double weight(vec vi, vec* centers, int j, int k);
-
-// This function overwrites memory in the "centers" array instead of returning anything.
+// "data" is an array of length 2*n (coordinates of data points).
+// "centers" is an array of length 2*k (coordinates of cluster centers).
+//
+// Instead of returning anything, this function overwrites memory in the "centers" array.
 // The cluster centers are updated with one iteration of fuzzy Lloyd's algorithm.
-// "data" is an array of length "n" (coordinates of data points).
-// "centers" is an array of length "k" (coordinates of cluster centers).
-void fuzzykmeans(vec* data, int n, vec* centers, int k);
+void fuzzykmeans(double* data, int n, double* centers, int k);
 
 #endif
 
