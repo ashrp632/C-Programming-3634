@@ -8,12 +8,14 @@
 // between the points ( v0[0] , v0[1] ) and ( v1[0] , v1[1] ).
 double dist2(double* v0, double* v1);
 
-// "d2" is an array of squared distances between a single data point and each cluster center.
+// Calculate the weight between data point i and center j (wij)
+// "vi" is an pointer to a single data point (number i).
+// "centers" is an array of length 2*k (coordinates of ALL cluster centers).
 // "j" is the index of the cluster center whose weight should be calculated.
-// "k" is the number of cluster centers (and the length of "d2")
+// "k" is the number of cluster centers.
 //
-// Returns the weight of a data point with respect to cluster j.
-double weight(double* d2,int j,int k);
+// Returns the weight of data point vi respect to cluster j.
+double weight(double* vi,double* centers,int j,int k);
 
 // "data" is an array of length 2*n (coordinates of data points).
 // "centers" is an array of length 2*k (coordinates of cluster centers).
