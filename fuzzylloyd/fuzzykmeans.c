@@ -19,6 +19,7 @@ double weight(double* vi, double* centers,int j,int k){
 
 void fuzzykmeans(double* data, int n, double* centers, int k){
   double *centv = (double*) malloc(2*sizeof(double));
+  double *centf = (double*) malloc(2*k*sizeof(double));
   double wsum = 0.0;
   double w = 0.0;
   centv[0] = 0.0;
@@ -29,15 +30,19 @@ void fuzzykmeans(double* data, int n, double* centers, int k){
       w = weight(pvec, centers, c, k);
       centv[0] += pow(w, 2) * pvec[0];
       centv[1] += pow(w, 2) * pvec[1];
-      wsum += pow(w, 2);                                                                                
+      wsum += pow(w, 2);                                                                                                    
     }
     centv[0] /= wsum;
     centv[1] /= wsum;
-    centers[c] = centv[0];
-    centers[c+1] = centv[1];                                                                           
+    centf[c] = centv[0];
+    centf[c+1] = centv[1];
     centv[0] = 0.0;
     centv[1] = 0.0;
     wsum = 0.0;
   }
+  for(int e = 0; e < sizeof(centf); e++){
+    centers[e] = centf[e];
+  }
+  free(centf);
   free(centv);
 }
