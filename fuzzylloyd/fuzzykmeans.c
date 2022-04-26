@@ -22,12 +22,12 @@ double weight(double* vi, double* centers,int j,int k){
 // Takes 5 seconds to complete convergence loop
 void fuzzykmeans(double* data, int n, double* centers, int k){
   double maxDiff = 1.0;
+  double *centv = (double*) malloc(2*sizeof(double));
+  double *centf = (double*) malloc(2*k*sizeof(double));
 
   while (maxDiff >= 0.001) {
     maxDiff = DBL_MIN;
     
-    double *centv = (double*) malloc(2*sizeof(double));
-    double *centf = (double*) malloc(2*k*sizeof(double));
     double wsum = 0.0;
     double w = 0.0;
     centv[0] = 0.0;
@@ -57,9 +57,9 @@ void fuzzykmeans(double* data, int n, double* centers, int k){
       centers[e  ] = centf[e];
       centers[e+1] = centf[e+1];
     }
-    free(centf);
-    free(centv);
   }
+  free(centf);
+  free(centv);
 }
 
 
