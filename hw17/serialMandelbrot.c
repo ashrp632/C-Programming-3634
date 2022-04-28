@@ -11,7 +11,7 @@ To run:
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
+#include <math.h>
 #include "png_util.h"
 
 void mandelbrot(const int Nx, 
@@ -37,8 +37,8 @@ void mandelbrot(const int Nx,
       int t, cnt=0;
       for(t=0;t<Nit;++t){
 
-	float xnew = x*x - y*y + cx;
-	float ynew = 2.*x*y + cy;
+	float xnew = cos(x) - cos(y) + cx;
+	float ynew = cos(x)*cos(y) + cy;
 
 	x = xnew;
 	y = ynew;

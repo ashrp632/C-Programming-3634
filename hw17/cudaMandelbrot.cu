@@ -60,7 +60,7 @@ __global__ void mandelbrotKernel(const int Nx,
       xnew -= y*y; 
       
       float ynew = cy;
-      ynew += 2.f*x*y;
+      ynew += 2.*x*y;
       
       x = xnew;
       y = ynew;
