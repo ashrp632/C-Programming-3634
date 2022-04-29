@@ -33,12 +33,12 @@ void mandelbrot(const int Nx,
       float x = 0;
       float y = 0;
       
-      int Nit = 200;
+      int Nit = 100;
       int t, cnt=0;
       for(t=0;t<Nit;++t){
 
-	float xnew = cos(x) - cos(y) + cx;
-	float ynew = cos(x)*cos(y) + cy;
+	float xnew = (exp(x)*cos(y)) + cx;
+	float ynew = exp(x)*sin(y) + cy;
 
 	x = xnew;
 	y = ynew;
@@ -58,8 +58,8 @@ void mandelbrot(const int Nx,
 
 int main(int argc, char **argv){
 
-  int Nx = 4096;
-  int Ny = 4096;
+  int Nx = 1638;
+  int Ny = 1638;
 
   /* box containing sample points */
   float xcent = -.759856;
