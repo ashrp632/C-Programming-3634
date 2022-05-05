@@ -1,44 +1,50 @@
-# set options for this machine
-# specify which compilers to use for c and linking
-cc = gcc
-LD = gcc
+# name you want for the executable file
+EXECUTABLE = main.out
 
-# define variables
+# library objects (change this part if you change your filenames)
+VOBJS = main.o fuzzykmeans.o oracle.o
+
+# This is the first rule, so it will be used when user types "make"
+# Since "output" never exists, Make will build the executable
+output: $(EXECUTABLE)
+
+COMPILER = mpicc
+
+# header directory
 HDRDIR = ./
 
-# optimization
-OPTIM = -g
+# optimization flags
+OPTIM = -O0
 
-# compiler flags to be used (set to compile with debugging on)
-CFLAGS = -I$(HDRDIR) $(OPTIM)
+# debugger flags if desired (often you'll want -g)
+DBUG =
 
-# link flags to be used
-LDFLAGS	= $(OPTIM)
+# compiler flags
+CFLAGS = -I $(HDRDIR) $(OPTIM) $(DBUG)
 
-# libraries to be linked in
+# linker flags
+LDFLAGS	= $(OPTIM) $(DBUG)
+
+# libraries to be linked in (often you'll want -lm)
 LIBS = -lm
 
 # header files to be counted as dependencies
-INCLUDES = 
+INCLUDES =
 
 # directory for source files
 SRCDIR = ./
 
-# types of files we are going to construct rules for
+# types of files we are going to state rules for
 .SUFFIXES: .c
 
-# rule for .c files
+# Rule specifying that .o files depend on "included" files and the makefile
+# This rule also teaches Make how to create .o files
 .c.o: $(INCLUDES) makefile
-	$(cc) $(CFLAGS) -o $*.o -c $*.c 
-
-# library objects
-VOBJS = main.o fuzzykmeans.o oracle.o
-
-# what to do if user types "make vector.out"
-main.out: $(VOBJS) $(INCLUDES) makefile
-	$(LD) $(LDFLAGS) -o main.out $(VOBJS) $(LIBS)
-
+	$(COMPILER) $(CFLAGS) -o $*.o -c $*.c
 
 # what to do if user types "make clean"
 clean:
-	rm *.o main.out
+	rm -f *.o $(EXECUTABLE)
+
+$(EXECUTABLE): $(VOBJS) $(INCLUDES) makefile
+	$(COMPILER) $(LDFLAGS) -o $(EXECUTABLE) $(VOBJS) $(LIBS)

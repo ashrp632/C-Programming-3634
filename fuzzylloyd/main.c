@@ -1,73 +1,127 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "fuzzykmeans.h"
 #include "oracle.h"
+#include <mpi.h>
 
+int main(int carg,char** varg){
 
-int main(int argc, char **argv){
-  int n, k;
-  n = atoi(argv[1]);
-  k = atoi(argv[2]);
-  
-  double* data = (double*)calloc(2*n,sizeof(double));
-  double* clusters = (double*)calloc(2*k,sizeof(double));
-  double* xdata = (double*)calloc(n,sizeof(double));
-  double* ydata = (double*)calloc(n,sizeof(double));
-  double* xparam = (double*)calloc(2,sizeof(double));
-  double* yparam = (double*)calloc(2,sizeof(double));
-  
-  oracle(data,0,n);
-  
-  int odd = 0;
-  for(int x = 0; x < 2*n; x+=2){
-    xdata[odd] = data[x];
-    odd++;
+  MPI_Init(&carg, &varg);
+
+  if(carg != 4){
+    printf("Please provide two arguments: n and k\n");
+    return 1;
   }
-  int even = 0;
-  for(int y = 1; y <2*n; y+=2){
-    ydata[even] = data[y];
-    even++;
-  }
-  
+  int size, rank;
+  int n = atoi(varg[1]);
+  int k = atoi(varg[2]);
+  int r = atoi(varg[3]);
 
-  for(int b = 0; b < n; b++){
-    if(xparam[0] < xdata[b]){
-      xparam[0] = xdata[b];
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+  if(n<=0 || k<=0){
+    printf("n and k really need to be positive\n");
+    return 1;
+  }
+
+  double* data = malloc(2*n*sizeof(double));
+  double* centers = malloc(2*k*sizeof(double));
+
+  //printf("K: %d, N: %d\n", k, n);
+  //printf("Centers: %d\n", sizeof(centers)/sizeof(double));
+
+  double tic = MPI_Wtime();
+
+  int approx = n/size;
+  int approx2 = (rank*n)/size;
+  double* rankData = malloc(2*approx*sizeof(double));
+
+  oracle(rankData, approx2, approx);
+
+  double xglobalMin;
+  double yglobalMin;
+  double yglobalMax;
+  double xglobalMax;
+
+  double xlo = rankData[0];
+  double xhi = rankData[0];
+  double ylo = rankData[1];
+  double yhi = rankData[1];
+
+  int i;
+  // Find the rectangle that bounds the data
+  for(i=0;i<n;++i){
+    if(data[2*i] < xlo)
+      xlo = rankData[2*i];
+    if(data[2*i] > xhi)
+      xhi = rankData[2*i];
+    if(data[2*i+1] < ylo)
+      ylo = rankData[2*i+1];
+    if(data[2*i+1] > yhi)
+      yhi = rankData[2*i+1];
+  }
+
+  MPI_Allreduce(&xlo, &xglobalMin, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(&ylo, &yglobalMin, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(&xhi, &xglobalMax, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+  MPI_Allreduce(&yhi, &yglobalMax, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+  //printf("rank %d xmax %f\n",rank, xhi);
+  //printf("rank %d xmax %f\n",rank, &xglobalMax);
+
+
+  // Select random points in the rectangle for the initial centers
+  double dx = &xglobalMax-&xglobalMin;
+  double dy = &yglobalMax-&yglobalMin;
+  drand48();
+  for(i=0;i<k;++i){
+    centers[2*i  ] = drand48()*dx + xglobalMin;
+    centers[2*i+1] = drand48()*dy + yglobalMin;
+  }
+
+  fuzzykmeans(rankData,n/size,centers,k);
+
+  MPI_Status status;
+  if(r == 0){
+    if(rank == 0){
+      double toc = MPI_Wtime();
+      printf("runtime = %f\n",toc-tic);
     }
-    if(xparam[1] > xdata[b]){
-      xparam[1] = xdata[b];
+  }
+  if(r==1){
+    if(rank == 0){
+      printf("Print rank = %d\n", rank);
+      printf("Print xmin %f\n,", xglobalMin);
+      printf("data = [%lf , %lf\n",rankData[0],rankData[1]);
+      for(i=1;i<approx;++i)
+	printf("        %lf , %lf\n",rankData[2*i],rankData[2*i+1]);
+      printf("];\ncenters = [%lf , %lf\n",centers[0],centers[1]);
+      for(i=1;i<k;++i)
+	printf("           %lf , %lf\n",centers[2*i],centers[2*i+1]);
+      printf("];\n");
+      MPI_Send(data, 1, MPI_INT, rank+1 ,1 , MPI_COMM_WORLD); 
     }
-    if(yparam[0] < ydata[b]){
-      yparam[0] = ydata[b];
+    else if(rank == size){
+      MPI_Recv(data, 1, MPI_INT, size - 1 ,1 , MPI_COMM_WORLD, &status); 
+      printf("print if max\n");
+      printf("data = [%lf , %lf\n",rankData[0],rankData[1]);
+      for(i=1;i<approx;++i)
+	printf("        %lf , %lf\n",rankData[2*i],rankData[2*i+1]);
     }
-    if(yparam[1] > ydata[b]){
-      yparam[1] = ydata[b];
+    else {
+      MPI_Recv(data, 1, MPI_INT, rank-1 ,1 , MPI_COMM_WORLD, &status); 
+      printf("Print rank = %d\n", rank);
+      printf("data = [%lf , %lf\n",rankData[0],rankData[1]);
+      for(i=1;i<approx;++i)
+	printf("        %lf , %lf\n",rankData[2*i],rankData[2*i+1]);
+      MPI_Send(data, 1, MPI_INT, rank+1 ,1 , MPI_COMM_WORLD); 
     }
-  }
-  
-  for(int c = 0; c <2*n; c++){
-    printf("%f\n",data[c]);
-  }
-
-  printf("\n");
-  
-  srand48(n);
-  for(int c = 0; c < 2*k; c+=2){
-    clusters[c] = drand48()*(xparam[0]-xparam[1]+1) + xparam[1];
-    clusters[c+1] = drand48()*(yparam[0]-yparam[1]+1) + yparam[1];
-  }
-
-  fuzzykmeans(data, n, clusters, k);
-  
-  for(int d = 0; d < 2*k; d+=2){
-    printf("%f, %f\n", clusters[d], clusters[d+1]);
-  }
-
+  }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+  // Print the data and converged centers
+  free(rankData);
   free(data);
-  free(clusters);
-  free(xdata);
-  free(ydata);
-  free(xparam);
-  free(yparam);
+  free(centers);
+  MPI_Finalize();
+    
+  return 0;
 }
-

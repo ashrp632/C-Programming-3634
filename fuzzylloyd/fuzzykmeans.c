@@ -1,65 +1,85 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <float.h>
+#include <mpi.h>
 #include "fuzzykmeans.h"
 
-double dist2(double* v0, double* v1) {
-  return sqrt(pow(v0[0] - v1[0], 2) + pow(v0[1] - v1[1],2));
+double dist2(double* v0, double* v1){
+  double dx = v0[0]-v1[0];
+  double dy = v0[1]-v1[1];
+  return dx*dx + dy*dy;
 }
 
-
-double weight(double* vi, double* centers,int j,int k){
-  double w = 0.0;
-  double *pcenter = &centers[j];
-  for (int l = 0; l <2* k; l+=2){
-    double *pcenterl = &centers[l];
-    w += pow(dist2(vi, pcenter),2)/pow(dist2(vi, pcenterl),2);
+double weight(double* d2,int j,int k){
+  double w = 0;
+  int el;
+  for(el=0;el<k;++el){
+    w += d2[j] / d2[el];
   }
-  return pow(w, -1);
+  return 1/w;
 }
 
-// Takes 5 seconds to complete convergence loop
 void fuzzykmeans(double* data, int n, double* centers, int k){
-  double maxDiff = 1.0;
-  double *centv = (double*) malloc(2*sizeof(double));
-  double *centf = (double*) malloc(2*k*sizeof(double));
+  double* new_centers = (double*)malloc(2*k*sizeof(double));
+  double* cluster_weights = (double*)malloc(k*sizeof(double));
+  double* new_centers2 = (double*)malloc(2*k*sizeof(double));                                                                                                                                          
+  double* cluster_weights2 = (double*)malloc(k*sizeof(double));
 
-  while (maxDiff >= 0.001) {
-    maxDiff = DBL_MIN;
-    
-    double wsum = 0.0;
-    double w = 0.0;
-    centv[0] = 0.0;
-    centv[1] = 0.0;
-    for (int c = 0; c < 2*k; c +=2){
-      for(int v = 0; v < 2*n; v +=2){
-	double *pvec = &data[v];
-	w = weight(pvec, centers, c, k);
-	centv[0] += pow(w, 2) * pvec[0];
-	centv[1] += pow(w, 2) * pvec[1];
-	wsum += pow(w, 2);                                                                                                    
-      }
-      centv[0] /= wsum;
-      centv[1] /= wsum;
-      centf[c] = centv[0];
-      centf[c+1] = centv[1];
-      centv[0] = 0.0;
-      centv[1] = 0.0;
-      wsum = 0.0;
+  // Squared distances
+  double* d2 = (double*)malloc(k*sizeof(double));
+
+  // Temp convenience variables
+  double w,w2;
+
+  int i,j;
+
+  double tol = 1e-3;
+  double d;
+  // Make delta big enough to get in the loop the first time
+  double delta = tol + 1;
+  while(delta > tol){
+    // The new centers and weights need to start at zero every iteration
+    // in order to accumulate correctly
+    for(j=0;j<k;++j){
+      cluster_weights[j] = 0;
+      new_centers[j] = 0;
+      new_centers[j+k] = 0;
     }
-    
-    for(int e = 0; e < 2*k; e+=2){
-      double diff = sqrt(pow(centers[e] - centf[e], 2) + pow(centers[e+1] - centf[e+1], 2));
-      if (diff > maxDiff) {
-	maxDiff = diff;
+    for(i=0;i<n;++i){
+      // Get all distances from centers to data point i
+      for(j=0;j<k;++j){
+	d2[j] = dist2(data+2*i,centers+2*j);
       }
-      centers[e  ] = centf[e];
-      centers[e+1] = centf[e+1];
+      // Add the contribution of data point i to
+      // every cluster weight and center location
+      for(j=0;j<k;++j){
+	w = weight(d2,j,k);
+	w2 = w*w;
+	cluster_weights[j] += w2;
+	new_centers[2*j  ] += w2*data[2*i  ];
+	new_centers[2*j+1] += w2*data[2*i+1];
+      }
+    }
+
+    MPI_Allreduce(new_centers, new_centers2, 2*k, MPI_DOUBLE, MPI_SUM,MPI_COMM_WORLD);                                                                                                               
+    MPI_Allreduce(cluster_weights, cluster_weights2, k, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);     
+
+    // Normalize new cluster centers by sum of weights
+    for(j=0;j<2*k;++j){
+      new_centers2[j] /= cluster_weights2[ j/2 ];
+    }
+    // Find largest coordinate change
+    delta = 0;
+    for(j=0;j<2*k;++j){
+      d = fabs(new_centers2[j] - centers[j]);
+      if(d > delta)
+	delta = d;
+      centers[j] = new_centers2[j];
     }
   }
-  free(centf);
-  free(centv);
-}
 
+  free(new_centers);
+  free(cluster_weights);
+  free(d2);
+}
 
