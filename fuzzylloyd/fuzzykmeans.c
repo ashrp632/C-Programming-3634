@@ -80,6 +80,8 @@ void fuzzykmeans(double* data, int n, double* centers, int k){
 
   free(new_centers);
   free(cluster_weights);
+  free(new_centers2);
+  free(cluster_weights2);
   free(d2);
 }
 

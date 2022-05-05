@@ -24,12 +24,7 @@ int main(int carg,char** varg){
     printf("n and k really need to be positive\n");
     return 1;
   }
-
-  double* data = malloc(2*n*sizeof(double));
   double* centers = malloc(2*k*sizeof(double));
-
-  //printf("K: %d, N: %d\n", k, n);
-  //printf("Centers: %d\n", sizeof(centers)/sizeof(double));
 
   double tic = MPI_Wtime();
 
@@ -51,14 +46,14 @@ int main(int carg,char** varg){
 
   int i;
   // Find the rectangle that bounds the data
-  for(i=0;i<n;++i){
-    if(data[2*i] < xlo)
+  for(i=0;i<n/size;++i){
+    if(rankData[2*i] < xlo)
       xlo = rankData[2*i];
-    if(data[2*i] > xhi)
+    if(rankData[2*i] > xhi)
       xhi = rankData[2*i];
-    if(data[2*i+1] < ylo)
+    if(rankData[2*i+1] < ylo)
       ylo = rankData[2*i+1];
-    if(data[2*i+1] > yhi)
+    if(rankData[2*i+1] > yhi)
       yhi = rankData[2*i+1];
   }
 
@@ -66,8 +61,6 @@ int main(int carg,char** varg){
   MPI_Allreduce(&ylo, &yglobalMin, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
   MPI_Allreduce(&xhi, &xglobalMax, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
   MPI_Allreduce(&yhi, &yglobalMax, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-  //printf("rank %d xmax %f\n",rank, xhi);
-  //printf("rank %d xmax %f\n",rank, &xglobalMax);
 
 
   // Select random points in the rectangle for the initial centers
@@ -88,6 +81,7 @@ int main(int carg,char** varg){
       printf("runtime = %f\n",toc-tic);
     }
   }
+  int one = 1;
   if(r==1){
     if(rank == 0){
       printf("Print rank = %d\n", rank);
@@ -99,27 +93,26 @@ int main(int carg,char** varg){
       for(i=1;i<k;++i)
 	printf("           %lf , %lf\n",centers[2*i],centers[2*i+1]);
       printf("];\n");
-      MPI_Send(data, 1, MPI_INT, rank+1 ,1 , MPI_COMM_WORLD); 
+      MPI_Send(&one, 1, MPI_INT, rank+1 ,1 , MPI_COMM_WORLD); 
     }
     else if(rank == size){
-      MPI_Recv(data, 1, MPI_INT, size - 1 ,1 , MPI_COMM_WORLD, &status); 
+      MPI_Recv(&one, 1, MPI_INT, size - 1 ,1 , MPI_COMM_WORLD, &status); 
       printf("print if max\n");
       printf("data = [%lf , %lf\n",rankData[0],rankData[1]);
       for(i=1;i<approx;++i)
 	printf("        %lf , %lf\n",rankData[2*i],rankData[2*i+1]);
     }
     else {
-      MPI_Recv(data, 1, MPI_INT, rank-1 ,1 , MPI_COMM_WORLD, &status); 
+      MPI_Recv(&one, 1, MPI_INT, rank-1 ,1 , MPI_COMM_WORLD, &status); 
       printf("Print rank = %d\n", rank);
       printf("data = [%lf , %lf\n",rankData[0],rankData[1]);
       for(i=1;i<approx;++i)
 	printf("        %lf , %lf\n",rankData[2*i],rankData[2*i+1]);
-      MPI_Send(data, 1, MPI_INT, rank+1 ,1 , MPI_COMM_WORLD); 
+      MPI_Send(&one, 1, MPI_INT, rank+1 ,1 , MPI_COMM_WORLD); 
     }
   }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-  // Print the data and converged centers
+  // Free data
   free(rankData);
-  free(data);
   free(centers);
   MPI_Finalize();
     
