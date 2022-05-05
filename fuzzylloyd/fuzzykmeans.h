@@ -9,13 +9,13 @@
 double dist2(double* v0, double* v1);
 
 // Calculate the weight between data point i and center j (wij)
-// "vi" is an pointer to a single data point (number i).
-// "centers" is an array of length 2*k (coordinates of ALL cluster centers).
+// "d2" is an array of length k containing SQUARED distances from data point i
+//      to each of the cluster centers.
 // "j" is the index of the cluster center whose weight should be calculated.
 // "k" is the number of cluster centers.
 //
-// Returns the weight of data point vi respect to cluster j.
-double weight(double* vi,double* centers,int j,int k);
+// Returns the weight of data point i with respect to cluster j.
+double weight(double* d2,int j,int k);
 
 // "data" is an array of length 2*n (coordinates of data points).
 // "centers" is an array of length 2*k (coordinates of cluster centers).
@@ -25,4 +25,3 @@ double weight(double* vi,double* centers,int j,int k);
 void fuzzykmeans(double* data, int n, double* centers, int k);
 
 #endif
-
